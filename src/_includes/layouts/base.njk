@@ -1,0 +1,34 @@
+{# Base HTML, compatible with what Vite expects #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title or metadata.title}}</title>
+    {% if build.env == "production" %}
+        {# Add any CSS from the main script #}
+        {% viteLinkStylesheetTags "src/client/main.ts" %}
+    {% endif %}
+</head>
+<body>
+    <main>
+        {{ content | safe }}
+        <ul>
+            {% for item in projects.projects %}
+                <li>{{item}}</li>
+            {% endfor %}
+        </ul>
+    </main>
+    {% if build.env == "production" %}
+        {# We must read the production scripts from the Vite manifest. We defer that logic to a custom shortcode #}
+        {% viteScriptTag "src/client/main.ts" %}
+    {% else %}
+        {# The vite development client #}
+        <script type="module" src="http://localhost:3000/@vite/client"></script>
+
+        {# The main script entry for development (pointing to vite) #}
+        <script type="module" src="http://localhost:3000/src/client/main.ts"></script>
+    {% endif %}
+</body>
+</html>

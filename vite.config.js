@@ -1,3 +1,4 @@
+import  config from './project.config.js';
 import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
@@ -10,7 +11,7 @@ export default defineConfig({
     // This is important: Generate directly to _site and then assetsDir.
     // You could opt to build in an intermediate directory,
     // and have Eleventy copy the flies instead.
-    outDir: "_site",
+    outDir: config.OUTPUT_DIR,
     // This is the default assetsDir. If you are using assets
     // for anything else, consider renaming assetsDir.
     // This can help you set cache headers for hashed output more easily.
@@ -21,7 +22,7 @@ export default defineConfig({
     manifest: true,
     rollupOptions: {
       // This is critical: overwrite default .html entry
-      input: "/src/client/main.ts",
+      input: `${config.ENTRY_FILE}`,
     },
   },
 });

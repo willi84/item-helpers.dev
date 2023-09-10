@@ -13,7 +13,7 @@
   },
   "main": "index.js",
   "devDependencies": {
-    "@11ty/eleventy": "^0.12.1",
+    "@11ty/eleventy": "^1.0.0",
     "@babel/standalone": "7.13.14",
     "@types/node": "^20.6.0",
     "npm-run-all": "^4.1.5",
@@ -23,7 +23,8 @@
     "vite": "^2.1.4"
   },
   "scripts": {
-    "re-install": "rm -rf node_modules && rm -rf _site && rm package-lock.json && npm cache verify && npm install && du -sh node_modules",
+    "re-install": "rm -rf node_modules && rm -rf _site && rm -f package-lock.json && npm install && du -sh node_modules",
+    "re-install_cache": "rm -rf node_modules && rm -rf _site && rm -f package-lock.json && npm cache verify && npm install && du -sh node_modules",
     "dev": "npm-run-all --parallel dev:tsc:watch dev:eleventy dev:vite",
     "dev:tsc:watch": "tsc-watch src/backend.ts --onSuccess \"node src/backend.js\"",
     "dev:eleventy": "eleventy --serve",

@@ -1,10 +1,9 @@
 // import 'vite/modulepreload-polyfill'
 export {}
-// console.log('run');
 const fs = require('fs');
  
 const projects = {
-    time: new Date().getTime(),
+    time: Math.floor(Date.now() / 1000),
     projects: ['bahn-helpers.dev', 'tiny-helpers.dev', 'ng-helpers.dev']
 }
 // TODO: make watch just re-cycle once

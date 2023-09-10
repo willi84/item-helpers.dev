@@ -8,7 +8,7 @@
     <title>{{title or metadata.title}}</title>
     {% if build.env == "production" %}
         {# Add any CSS from the main script #}
-        {% viteLinkStylesheetTags "src/client/main.ts" %}
+        {% viteLinkStylesheetTags config.ENTRY_FILE %}
     {% endif %}
 </head>
 <body>
@@ -20,15 +20,18 @@
             {% endfor %}
         </ul>
     </main>
+    <footer>
+        build on {{projects.time | dateTime}}
+    </footer>
     {% if build.env == "production" %}
         {# We must read the production scripts from the Vite manifest. We defer that logic to a custom shortcode #}
-        {% viteScriptTag "src/client/main.ts" %}
+        {% viteScriptTag config.ENTRY_FILE %}
     {% else %}
         {# The vite development client #}
-        <script type="module" src="http://localhost:3000/@vite/client"></script>
+        <script type="module" src="{{config.HOST_VITE}}/@vite/client"></script>
 
         {# The main script entry for development (pointing to vite) #}
-        <script type="module" src="http://localhost:3000/src/client/main.ts"></script>
+        <script type="module" src="{{config.HOST_VITE}}/{{config.ENTRY_FILE}}"></script>
     {% endif %}
 </body>
 </html>

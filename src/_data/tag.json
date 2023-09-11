@@ -1,0 +1,13 @@
+{
+    "items": [
+        {
+            "name": "project a",
+            "maintainers": ["willi84"],
+            "tags": ["tag A", "tag B"],
+            "desc": "das ist ein Project",
+            "addedAt": "2023-09-08",
+            "url": "https://robert.berlin",
+            "image": "test.jpg"
+        }
+    ]
+}

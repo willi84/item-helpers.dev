@@ -12,14 +12,16 @@
     {% endif %}
 </head>
 <body>
-    <main>
-        {{ content | safe }}
-        <ul>
-            {% for item in projects.projects %}
-                <li>{{item}}</li>
-            {% endfor %}
-        </ul>
-    </main>
+    <div class="container">
+        {% include '_logo.njk' %}
+        {# {% include '_social.njk' %}
+        {% include '_navigation.njk' %} #}
+    
+        <main id="main-content">
+          {% include '_list.njk' %}
+        </main>
+      </div>
+  
     <footer>
         build on {{projects.time | dateTime}}
     </footer>

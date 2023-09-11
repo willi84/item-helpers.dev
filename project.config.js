@@ -16,8 +16,16 @@ const TEMPLATE_ENGINE = 'njk';
 const HOSTNAME_DEV = 'localhost';
 const PORT_VITE = 3000;
 const HOST_VITE = `http://${HOSTNAME_DEV}:${PORT_VITE}`;
+const PROJECT_SLUG = "item-helpers";
+const LOGO = 'logo.svg';
+const MENU_ICON = 'burger.svg';
+const PROJECT_NAME = 'Item Helpers'
 
 module.exports = {
+    LOGO: LOGO,
+    MENU_ICON: MENU_ICON,
+    PROJECT_SLUG: PROJECT_SLUG,
+    PROJECT_NAME: PROJECT_NAME,
     OUTPUT_DIR: OUTPUT_DIR,
     // CLIENT_DIR: CLIENT_DIR,
     PATH_PREFIX: PATH_PREFIX,

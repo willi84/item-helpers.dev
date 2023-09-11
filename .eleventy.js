@@ -1,4 +1,5 @@
 const fs = require("fs/promises");
+const FS = require("fs");
 const path = require("path");
 const markdownIt = require("markdown-it");
 const config = require("./project.config.js")
@@ -10,12 +11,29 @@ const TEMPLATE_ENGINE = config.TEMPLATE_ENGINE;
 const PATH_PREFIX = config.PATH_PREFIX;
 
 module.exports = function (eleventyConfig) {
+  // eleventyConfig.addPassthroughCopy({ static: '.' });
+  eleventyConfig.addPassthroughCopy({ api: 'api' });
   // Disable whitespace-as-code-indicator, which breaks a lot of markup
   const configuredMdLibrary = markdownIt({ html: true }).disable("code");
   eleventyConfig.setLibrary("md", configuredMdLibrary);
 
   // get project variables as global config
   eleventyConfig.addNunjucksGlobal('config', config);
+
+  eleventyConfig.addNunjucksFilter("svg", (fileName, dimension, css) => {
+    // const content = await fs.readFile(
+    //   path.resolve(process.cwd(), "src/content", fileName)
+    // );
+    let content = FS.readFileSync(`src/content/${fileName}`).toString();
+    if(dimension && css){
+      content = content.replace(/width="\d*"/, "");
+      content = content.replace(/height="\d*"/, "");
+      content = content.replace('<svg ', `<svg class="${css}" width="${dimension}" height="${dimension}" aria-hidden="true"`);
+    } else {
+    }
+    return content;
+
+  });
 
   // date filter
   eleventyConfig.addNunjucksFilter("dateTime", function(timestamp) {

@@ -1,9 +1,7 @@
-* {
-  &,
-  &::before,
-  &::after {
-    box-sizing: border-box;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body,
@@ -31,11 +29,10 @@ a {
   text-decoration: underline;
   text-underline-offset: 0.2em;
   text-decoration-thickness: 2px;
+}
 
-  &:hover,
-  &:active {
-    color: var(--primary-color);
-  }
+a:hover, a:active{
+  color: var(--primary-color);
 }
 
 svg {

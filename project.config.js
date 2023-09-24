@@ -19,9 +19,12 @@ const HOST_VITE = `http://${HOSTNAME_DEV}:${PORT_VITE}`;
 const PROJECT_SLUG = "item-helpers";
 const LOGO = 'logo.svg';
 const MENU_ICON = 'burger.svg';
-const PROJECT_NAME = 'Item Helpers'
+const PROJECT_NAME = 'Item Helpers';
+const CONFIG_ID = 'itemshelper';
+
 
 module.exports = {
+    CONFIG_ID: CONFIG_ID,
     LOGO: LOGO,
     MENU_ICON: MENU_ICON,
     PROJECT_SLUG: PROJECT_SLUG,

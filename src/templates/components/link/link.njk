@@ -1,0 +1,3 @@
+
+{% set aria_label = 'aria_label="' + params.aria_label +'"' if params.aria_label is defined else "" %}
+<a class="color-primary" href="{{params.link | url | safe}}" {{aria_label | safe }}>{{params.text}}</a>,

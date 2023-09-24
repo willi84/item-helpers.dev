@@ -1,3 +1,5 @@
+{%- from "../component.njk" import component -%}
+
 {# Base HTML, compatible with what Vite expects #}
 <!DOCTYPE html>
 <html lang="en">
@@ -14,16 +16,14 @@
 <body>
     <div class="container">
         {% include '_logo.njk' %}
-        {# {% include '_social.njk' %}
-        {% include '_navigation.njk' %} #}
-    
+        {% include '_social.njk' %}
+        {% include '_navigation.njk' %}
         <main id="main-content">
           {% include '_list.njk' %}
         </main>
       </div>
-  
     <footer>
-        build on {{projects.time | dateTime}}
+        build on {{projects.time | prettyDate}}
     </footer>
     {% if build.env == "production" %}
         {# We must read the production scripts from the Vite manifest. We defer that logic to a custom shortcode #}

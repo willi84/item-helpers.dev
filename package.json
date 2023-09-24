@@ -40,7 +40,7 @@
     "build": "npm run build:tsc && npm run build:vite && npm run build:eleventy",
     "build:prod": "NODE_ENV=production npm run build",
     "build:tsc": "tsc  src/backend/index.ts",
-    "build:eleventy": "eleventy",
+    "build:eleventy": "DEBUG=Eleventy* eleventy",
     "build:vite": "vite build --config vite.config.js",
     "prod_serve": "NODE_ENV=production npm run build && serve _site"
   }

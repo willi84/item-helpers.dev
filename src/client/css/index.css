@@ -16,11 +16,15 @@
 @import './util/_visibility.css';
 @import './_fonts.css';
 
+
 body {
   --primary-color: #405fca;
   --text-color: #484a53;
   --text-highlight-color: #393c42;
   --light-border-color: #d9dfe4;
+
+  --button-hover-color: #506fda;
+  --button-shadow-color: #405fca82;
 
   --canvas-bg-color: #f5f7ff;
   --canvas-light-color: #fafcff;
@@ -113,8 +117,7 @@ body {
   border: 2px solid currentColor;
 }
 
-.inline-list {
-  > li {
-    display: inline-block;
-  }
+.inline-list  > li {
+  display: inline-block;
 }
+

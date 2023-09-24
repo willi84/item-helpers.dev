@@ -1,0 +1,17 @@
+{% set PROJECT = project[config.CONFIG_ID] %}
+
+<div class="social-grid thin-border-bottom bg-light">
+  {% for social_link in PROJECT.socials %}
+    {{
+      component("button_link", {
+        "type": social_link.type,
+        "image_url": social_link.image,
+        "text": social_link.text,
+        "link": social_link.link,
+        "size": social_link.size,
+        "focusable": social_link.focusable,
+        "aria_hidden": social_link.aria_hidden
+      })
+    }}
+  {% endfor%}
+</div>

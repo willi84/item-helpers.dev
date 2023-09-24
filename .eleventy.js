@@ -2,7 +2,8 @@ const fs = require("fs/promises");
 const FS = require("fs");
 const path = require("path");
 const markdownIt = require("markdown-it");
-const config = require("./project.config.js")
+const config = require("./project.config.js");
+const { NODE_ENV } = process.env;
 
 const TEMPLATE_ENGINE = config.TEMPLATE_ENGINE;
 
@@ -20,17 +21,61 @@ module.exports = function (eleventyConfig) {
   // get project variables as global config
   eleventyConfig.addNunjucksGlobal('config', config);
 
-  eleventyConfig.addNunjucksFilter("svg", (fileName, dimension, css) => {
-    // const content = await fs.readFile(
-    //   path.resolve(process.cwd(), "src/content", fileName)
-    // );
+  eleventyConfig.addNunjucksFilter('route', function (
+    slug,
+    { listIsSortedBy }
+  ) {
+    // in production the home dir is mapped to root
+    if (NODE_ENV === 'production' && slug === 'home') {
+      slug = '';
+    }
+
+    let route = slug && slug.length ? `/${slug}/` : '/';
+
+    if (listIsSortedBy === 'addedAt') {
+      route += 'latest/';
+    }
+
+    return route;
+  });
+  eleventyConfig.addNunjucksFilter('prettyDate', function (dateString) {
+    const date = new Date(dateString);
+    const regex = /^(?<day>\w+?)\s(?<month>\w+?)\s(?<date>\w+?) (?<year>\d+?)$/;
+    const matched = date.toDateString().match(regex);
+
+    if (matched) {
+      const { month, year } = matched.groups;
+      return `${month} ${year}`;
+    }
+
+    return dateString;
+  });
+  eleventyConfig.addNunjucksFilter("merge", (object, opts) => {
+    const newObject = {...object};
+    const keys = Object.keys(opts);
+    if(keys.length > 0){
+      keys.forEach(key => {
+        newObject[key] = opts[key];
+      });
+    }
+    console.log(newObject)
+    return newObject;
+  });
+
+  eleventyConfig.addNunjucksFilter("svg", (fileName, dimension, css_extend, opts) => {
     let content = FS.readFileSync(`src/content/${fileName}`).toString();
-    if(dimension && css){
-      content = content.replace(/width="\d*"/, "");
-      content = content.replace(/height="\d*"/, "");
-      content = content.replace('<svg ', `<svg class="${css}" width="${dimension}" height="${dimension}" aria-hidden="true"`);
+    const ariaHidden = opts && opts.hasOwnProperty('ariaHidden') === true ? `aria-hidden="${opts.ariaHidden}"` : '';
+    const focusable = opts && opts.hasOwnProperty('focusable') === true  ? `focusable="${opts.focusable}"` : '';
+    const css = css_extend ? `class="${css_extend}"` : '';
+    const size = typeof dimension === 'number' ? [dimension, dimension] : dimension;
+    let dimensions = '';
+    if(dimension){
+      content = content.replace(/width="[^"]+"/, "");
+      content = content.replace(/height="[^"]+"/, "");
+      dimensions = `width="${size[0]}" height="${size[1]}"`
     } else {
     }
+    content = content.replace('<svg ', `<svg ${dimensions} ${css}  ${ariaHidden} ${focusable}`);
     return content;
 
   });

@@ -1,9 +1,12 @@
-const fs = require("fs/promises");
-const FS = require("fs");
-const path = require("path");
 const markdownIt = require("markdown-it");
 const config = require("./project.config.js");
-const { NODE_ENV } = process.env;
+
+const { svgFilter } = require('./src/setup/filters/svg.filter.js');
+const { routeFilter } = require('./src/setup/filters/route.filter.js');
+const { prettyDateFilter } = require("./src/setup/filters/prettyDate.filter.js");
+const { mergeFilter } = require("./src/setup/filters/merge.filter.js");
+const { dateTimeFilter } = require("./src/setup/filters/dateTime.filter.js");
+const { viteScriptTag, viteLegacyScriptTag, viteLinkStylesheetTags } = require("./src/setup/shortcodes/vite.shortcode.js");
 
 const TEMPLATE_ENGINE = config.TEMPLATE_ENGINE;
 
@@ -13,89 +16,29 @@ const PATH_PREFIX = config.PATH_PREFIX;
 
 module.exports = function (eleventyConfig) {
   // eleventyConfig.addPassthroughCopy({ static: '.' });
-  eleventyConfig.addPassthroughCopy({ api: 'api' });
+
+  // eleventyConfig.addWatchTarget('./items');
+  eleventyConfig.addWatchTarget('./src/frontend/');
+
+  // static asset pathes
+  config.STATIC_ASSETS.forEach(ASSET => {
+    eleventyConfig.addPassthroughCopy(ASSET);
+  });
+  
   // Disable whitespace-as-code-indicator, which breaks a lot of markup
   const configuredMdLibrary = markdownIt({ html: true }).disable("code");
   eleventyConfig.setLibrary("md", configuredMdLibrary);
 
+
   // get project variables as global config
   eleventyConfig.addNunjucksGlobal('config', config);
 
-  eleventyConfig.addNunjucksFilter('route', function (
-    slug,
-    { listIsSortedBy }
-  ) {
-    // in production the home dir is mapped to root
-    if (NODE_ENV === 'production' && slug === 'home') {
-      slug = '';
-    }
-
-    let route = slug && slug.length ? `/${slug}/` : '/';
-
-    if (listIsSortedBy === 'addedAt') {
-      route += 'latest/';
-    }
-
-    return route;
-  });
-  eleventyConfig.addNunjucksFilter('prettyDate', function (dateString) {
-    const date = new Date(dateString);
-    const regex = /^(?<day>\w+?)\s(?<month>\w+?)\s(?<date>\w+?) (?<year>\d+?)$/;
-    const matched = date.toDateString().match(regex);
-
-    if (matched) {
-      const { month, year } = matched.groups;
-      return `${month} ${year}`;
-    }
-
-    return dateString;
-  });
-  eleventyConfig.addNunjucksFilter("merge", (object, opts) => {
-    const newObject = {...object};
-    const keys = Object.keys(opts);
-    if(keys.length > 0){
-      keys.forEach(key => {
-        newObject[key] = opts[key];
-      });
-    }
-    console.log(newObject)
-    return newObject;
-  });
-
-  eleventyConfig.addNunjucksFilter("svg", (fileName, dimension, css_extend, opts) => {
-    let content = FS.readFileSync(`src/content/${fileName}`).toString();
-    const ariaHidden = opts && opts.hasOwnProperty('ariaHidden') === true ? `aria-hidden="${opts.ariaHidden}"` : '';
-    const focusable = opts && opts.hasOwnProperty('focusable') === true  ? `focusable="${opts.focusable}"` : '';
-    const css = css_extend ? `class="${css_extend}"` : '';
-    const size = typeof dimension === 'number' ? [dimension, dimension] : dimension;
-    let dimensions = '';
-    if(dimension){
-      content = content.replace(/width="[^"]+"/, "");
-      content = content.replace(/height="[^"]+"/, "");
-      dimensions = `width="${size[0]}" height="${size[1]}"`
-    } else {
-    }
-    content = content.replace('<svg ', `<svg ${dimensions} ${css}  ${ariaHidden} ${focusable}`);
-    return content;
-
-  });
-
-  // date filter
-  eleventyConfig.addNunjucksFilter("dateTime", function(timestamp) {
-    const date = new Date(timestamp * 1000);
-
-    // Get date components
-    const day = date.getDate();
-    const month = date.getMonth() + 1; // Months are zero-indexed
-    const year = date.getFullYear();
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const seconds = date.getSeconds();
-
-    // Format components as a German date string
-    return  `${day}.${month}.${year}, ${hours}:${minutes}:${seconds}`;
-
-   });
+  // nunjucks filters
+  eleventyConfig.addNunjucksFilter('route', routeFilter);
+  eleventyConfig.addNunjucksFilter('prettyDate', prettyDateFilter);
+  eleventyConfig.addNunjucksFilter("merge", mergeFilter);
+  eleventyConfig.addNunjucksFilter("svg", svgFilter);
+  eleventyConfig.addNunjucksFilter("dateTime", dateTimeFilter);
 
   // Read Vite's manifest.json, and add script tags for the entry files
   // You could decide to do more things here, such as adding preload/prefetch tags
@@ -105,66 +48,10 @@ module.exports = function (eleventyConfig) {
   // you could probably read vite.config.js and get that information directly
   // @see https://vitejs.dev/guide/backend-integration.html
   eleventyConfig.addNunjucksAsyncShortcode("viteScriptTag", viteScriptTag);
-  eleventyConfig.addNunjucksAsyncShortcode(
-    "viteLegacyScriptTag",
-    viteLegacyScriptTag
-  );
-  eleventyConfig.addNunjucksAsyncShortcode(
-    "viteLinkStylesheetTags",
-    viteLinkStylesheetTags
-  );
+  eleventyConfig.addNunjucksAsyncShortcode("viteLegacyScriptTag", viteLegacyScriptTag );
+  eleventyConfig.addNunjucksAsyncShortcode("viteLinkStylesheetTags", viteLinkStylesheetTags );
 
-  async function viteScriptTag(entryFilename) {
-    const entryChunk = await getChunkInformationFor(entryFilename);
-    return `<script type="module" src="${PATH_PREFIX}${entryChunk.file}"></script>`;
-  }
-
-  async function viteLinkStylesheetTags(entryFilename) {
-    const entryChunk = await getChunkInformationFor(entryFilename);
-    if (!entryChunk.css || entryChunk.css.length === 0) {
-      console.warn(`No css found for ${entryFilename} entry. Is that correct?`);
-      return "";
-    }
-    /* There can be multiple CSS files per entry, so assume many by default */
-    return entryChunk.css
-      .map((cssFile) => `<link rel="stylesheet" href="${PATH_PREFIX}${cssFile}"></link>`)
-      .join("\n");
-  }
-
-  async function viteLegacyScriptTag(entryFilename) {
-    const entryChunk = await getChunkInformationFor(entryFilename);
-    return `<script nomodule src="${PATH_PREFIX}${entryChunk.file}"></script>`;
-  }
-
-  async function getChunkInformationFor(entryFilename) {
-    // We want an entryFilename, because in practice you might have multiple entrypoints
-    // This is similar to how you specify an entry in development more
-    if (!entryFilename) {
-      throw new Error(
-        "You must specify an entryFilename, so that vite-script can find the correct file."
-      );
-    }
-
-    // TODO: Consider caching this call, to avoid going to the filesystem every time
-    const manifest = await fs.readFile(
-      path.resolve(process.cwd(), "_site", "manifest.json")
-    );
-    const parsed = JSON.parse(manifest);
-
-    let entryChunk = parsed[entryFilename];
-
-    if (!entryChunk) {
-      const possibleEntries = Object.values(parsed)
-        .filter((chunk) => chunk.isEntry === true)
-        .map((chunk) => `"${chunk.src}"`)
-        .join(`, `);
-      throw new Error(
-        `No entry for ${entryFilename} found in _site/manifest.json. Valid entries in manifest: ${possibleEntries}`
-      );
-    }
-
-    return entryChunk;
-  }
+ 
 
   return {
     templateFormats: ["md", TEMPLATE_ENGINE, "html"],

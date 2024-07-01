@@ -37,3 +37,16 @@ export type HTTP_STATUS_300 = HTTPStatusBase & {
 export type HTTP_OBJECTS = {
     [key: string]: HTTPStatusBase;
 }
+export type IMAGE_UPDATE = {
+    url: string;
+    httpItem: HTTPStatusBase;
+}
+export type ERROR_TYPE = number;
+
+// export interface Profile {
+//     id: string;
+//     url: string;
+//     imageUrl: string;
+//     lastModified: Date;
+//     size: string;
+// }

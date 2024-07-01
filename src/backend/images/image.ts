@@ -1,62 +1,97 @@
-import { HTTPStatusBase, HTTP_STATUS } from "../index.d";
-import { fileExists, writeFileSync, readFile } from "../_shared/fs/fs"
+// function deepMerge<T>(target: T, source: T): T {
+import { HTTPStatusBase, IMAGE_UPDATE } from "../index.d";
+import { fileExists, readFile } from "../_shared/fs/fs"
+import { LOG, WARNING } from "../_shared/log/log";
+import { IMAGE_FILES, IMAGE_ERROR } from "./image.config";
+import { makeDescision } from "./descision/descision";
+import { IMAGE_DATA as IMAGE_DB, IMAGE_ITEM } from "./image.d";
 
-const storeProfileImage = (images: any, url: string, httpItem: HTTPStatusBase) => {
+
+export const readImageData = (type: string) => {
     const cwd = process.cwd();
-    // const pathImageData = `${cwd}/src/_data/images.json`;
-    // const profile = readFile(path);
-    // TODO: check if file exists
-    if(!images.profiles){
-        images.profiles = {};
-    }
-    console.log(url)
-    const isGithub = url.indexOf('github.com') !== -1;
-    if(isGithub){
-        const parts = url.split('/');
-        const id = parts[parts.length - 1].replace('.png', '');
-        if(!images.profiles[`github/${id}`]){
-            images.profiles[`github/${id}`] = {
-                url: url,
-                imageUrl: url, // forwarded url
-                id: id,
-                type: 'github',
-                path: '', // local path
-                lastModified: '',
-                size: '',
-                isStored: false, // on local 
-                status: 'OK',
-                sha: '',
-                timeRequest: ''
-
-            };
-        } else {
-            if(httpItem.lastModified !== images.profiles[`github/${id}`].lastModified){
-                images.profiles[`github/${id}`].lastModified = httpItem.lastModified;
-                // store new image
-            }
+    const file: string = IMAGE_FILES[type];
+    if(file){
+        const path = `${cwd}/${file}`;
+        if(!fileExists(path)){
+            // writeFileSync(path,JSON.stringify({}));
         }
-        // check contentType
-        // convert to webp
-        const image_url = `github_${id}.png`;
-
+        const imageData = readFile(path);
+        if(!imageData){
+            return {};
+        }
+        const images = JSON.parse(imageData);
+        return images;
+    } else {
+        LOG(WARNING, `no file configuration for ${type} found`)
     }
-    // writeFileSync(`${cwd}/src/_data/images.json`, JSON.stringify(images, null, 4) );
+    
+}
 
+
+
+const getImageID = (url: string) => {
+    const PLATTFORM = `github`;
+    const parts = url.split('/') || [url];
+    const id = parts[parts.length - 1].replace('.png', '');
+    return `${PLATTFORM}/${id}`;
+}
+export const createImageItem = (profil: IMAGE_UPDATE, isEmpty = false): IMAGE_ITEM => {
+    const httpItem: HTTPStatusBase = profil.httpItem;
+    const profileId: string = getImageID(profil.url);
+    const emptyItem: IMAGE_ITEM = {
+        id: '',
+        url: '',
+        lastModified: new Date(),
+        size: '0',
+        imageUrl: '',
+        status: ''
+    };
+    console.log(emptyItem.lastModified);
+    return isEmpty ? emptyItem : {
+        status: httpItem.status,
+        id: profileId,
+        url: profil.url,
+        lastModified: new Date(httpItem.lastModified),
+        size: httpItem.contentLength,
+        imageUrl: httpItem.lastLocation
+    }
+}
+
+
+export const updateImage = (database: IMAGE_DB, image: IMAGE_UPDATE): IMAGE_DB => {
+    
+    const newItem: IMAGE_ITEM = createImageItem(image);
+    let doUpdate: boolean = false;
+    if(!database[newItem.id]){ // create imageEntry if not exists
+        // doUpdate = true;
+        const oldItem: IMAGE_ITEM  = createImageItem(image, true);
+        doUpdate = makeDescision(oldItem, newItem);
+    } else {
+        const oldItem: IMAGE_ITEM = database[newItem.id];
+        doUpdate = makeDescision(oldItem, newItem);
+    }
+    if(doUpdate === true){
+        database[newItem.id] = {
+            ...newItem
+        }
+    }
+    return database;
 }
 
 export const storeImage = (path: string, type: string, httpItem: HTTPStatusBase) => {
     const cwd = process.cwd();
     const pathImageData = `${cwd}/src/_data/images.json`;
     if(!fileExists(pathImageData)){
-        writeFileSync(pathImageData, JSON.stringify({}));
+        // writeFileSync(pathImageData, JSON.stringify({}));
     }
     const imageData = readFile(pathImageData);
     if(imageData){
         const images = JSON.parse(imageData);
-        console.log(images)
+        // console.log(images);
+        
         switch(type){
             case 'profile':
-                storeProfileImage(images, path, httpItem);
+                //storeProfileImage(images, path, httpItem);
                 break;
             default:
                 break;

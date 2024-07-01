@@ -24,3 +24,7 @@
 # List
 * CSS-PErformacne
 * create simple API of data
+
+
+* JSON schema
+* deep copy

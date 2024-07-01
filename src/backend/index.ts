@@ -1,19 +1,25 @@
-import { getProjects } from "./result/result";
+// import { getProjects } from "./result/result";
 
-// import 'vite/modulepreload-polyfill'
-const fs = require('fs');
+// import { checkUrls } from "./apps/check_urls";
 
-const config = require("./../../project.config.js");
+// // import 'vite/modulepreload-polyfill'
+// const fs = require('fs');
 
-const projects = getProjects([]);
-// TODO: make watch just re-cycle once
-fs.writeFileSync(`${config.DATA_PATH}/tag.json`, JSON.stringify(projects));
-// fs.writeFileSync(`${config.DATA_PATH}/formatted.json`, JSON.stringify(projects, null, 4));
+// const config = require("./../../project.config.js");
 
-const testData = [{
-    key: 'key', value: 'value'
-}];
+// const projects = getProjects([]);
+// // TODO: make watch just re-cycle once
+// fs.writeFileSync(`${config.DATA_PATH}/tag.json`, JSON.stringify(projects));
+// // fs.writeFileSync(`${config.DATA_PATH}/formatted.json`, JSON.stringify(projects, null, 4));
 
-for(const item of testData){
-    console.log(item);
-}
+// const testData = [{
+//     key: 'key', value: 'value'
+// }];
+
+// for(const item of testData){
+//     console.log(item);
+// }
+
+
+// checkUrls();
+export const random = () => {};
